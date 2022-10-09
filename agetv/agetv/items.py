@@ -6,12 +6,6 @@
 import scrapy
 
 
-class AgetvItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
-
-
 class VideoItem(scrapy.Item):
     v_title = scrapy.Field()
     v_address = scrapy.Field()
