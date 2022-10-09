@@ -1,73 +1,64 @@
-import sys
+import logging
 
 import scrapy
-from lxml import etree
 from scrapy import Request
 from scrapy.http import Response
 
-# 标记一下IO出去时，排行页的顺序
-page_number = 0
+from agetv.items import VideoItem
 
 
 class AgetvRanksSpider(scrapy.Spider):
-    name = 'AGE排行页'
+    name = 'AGE动漫网'
     allowed_domains = ['https://agemys.cc']
 
     # start_urls = ['https://www.agemys.cc/rank?tag=catyear&value=&page=2']
 
-    def start_requests(self):
-        for i in range(1, 51):
-            yield Request(url=f'https://www.agemys.cc/rank?tag=catyear&value=&page={i}')
+    rank_number = 0
 
+    def start_requests(self):
+        # for i in range(1, 51):
+        yield Request(url=f'https://www.agemys.cc/rank?tag=catyear&value=&page={1}')
+        logging.info(f'[----------开始请求第{1}页排行----------]')
+
+    # 转接每一个资源请求到 video_parse进行解析
     def parse(self, response: Response, **kwargs):
-        global page_number
-        # 将每一页排行写出到本地
-        try:
-            file = open(file=f'/html/AGETV/index{page_number}.html', mode='w+', encoding="UTF-8")
-            page_number = page_number + 1
-            file.writelines(response.text)
-            file.close()
-        except Exception as e:
-            print(e.args, e)
+        self.rank_number = self.rank_number + 1
+        rank_temp = self.rank_number
+        logging.info(f'[----------开始解析第{rank_temp}页的排行页----------]')
+        video_urls = response.xpath('//li[contains(@class,"rank_text")]/a/@href').extract()
+        print(video_urls)
+        # for video_url in video_urls:
+        yield Request(method='GET', url=self.allowed_domains[0] + video_urls[0], callback=self.video_parse,
+                      dont_filter=True)
 
+        # logging.info(f'[----------第{rank_temp}页的排行已经解析完毕----------]')
 
-class AgetvResourcePageSpider(scrapy.Spider):
-    name = 'AGE资源页爬取'
-    allowed_domains = ['https://agemys.cc']
+        # 解析每一个资源
 
-    # start_urls = ['D:/html/AGETV/index0.html']
-
-    def start_requests(self):
-        page = 1
-        for i in range(0, 50):
-            lxml = etree.parse(f'/html/AGETV/index{i}.html', etree.HTMLParser())
-            urls = lxml.xpath('//li[contains(@class,"rank_text")]/a/@href')
-            for url in urls:
-                url = 'https://agemys.cc/' + url
-                yield Request(url=url)
-            print(f'--------- 开始抓取第{page}组数据---------- ')
-            page = page + 1
-
-    def parse(self, response, **kwargs):
-        global page_number
-        try:
-            file = open(file=f'/html/AGETV/Video/index{page_number}.html', mode='w+', encoding="UTF-8")
-            page_number = page_number + 1
-            file.writelines(response.text)
-            file.close()
-            print(f'-----------成功抓取第{page_number}跳数据------------')
-        except Exception as e:
-            print(e.args, e)
-
-
-class AgeResultSpider(scrapy.Spider):
-    name = 'AGE资源页爬取'
-    allowed_domains = ['https://agemys.cc']
-
-    def start_requests(self):
-        for i in range(0, 31367):
-            yield Request(url=f'/html/AGETV/Video/index{i}.html')
-
-    def parse(self, response: Response, **kwargs):
-        pass
-
+    def video_parse(self, resp: Response):
+        logging.info('[----------开始解析数据----------]')
+        video = VideoItem()
+        video['v_title'] = resp.xpath('//div[@class="blockcontent"]/h4/text()').extract()
+        video_tag = resp.xpath('//span[@class="detail_imform_value"]/text()').extract()
+        video['v_address'] = video_tag[0]
+        video['v_arime_type'] = video_tag[1]
+        video['v_original_name'] = video_tag[2]
+        video['v_other_name'] = video_tag[3]
+        video['v_author'] = video_tag[4]
+        video['v_production'] = video_tag[5]
+        video['v_first_time'] = video_tag[6]
+        video['v_play_status'] = video_tag[7]
+        video['v_plot_type'] = video_tag[8]
+        video['v_label'] = video_tag[9]
+        video['v_original_web'] = video_tag[10]
+        video['v_home'] = resp.url
+        # 解析播放链接
+        movurls = resp.xpath('//div[@class="movurl"]')
+        video_links = []
+        for movurl in movurls:
+            urls = movurl.xpath('./ul//li/a/@href').extract()
+            for i in range(0, len(urls)):
+                urls[i] = resp.url + urls[i]
+            video_links.append(urls)
+        video['v_urls'] = video_links
+        yield video
