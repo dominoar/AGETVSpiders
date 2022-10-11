@@ -62,3 +62,8 @@ CONCURRENT_REQUESTS_PER_IP = 100
 
 # 禁用cookie
 COOKIES_ENABLED = False
+
+# 管道优先级
+ITEM_PIPELINES = {
+    'agetv.pipelines.AgetvPipeline': 200
+}

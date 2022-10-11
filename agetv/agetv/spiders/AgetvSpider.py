@@ -29,6 +29,7 @@ class AgetvRanksSpider(scrapy.Spider):
         print(video_urls)
         # for video_url in video_urls:
         yield Request(method='GET', url=self.allowed_domains[0] + video_urls[0], callback=self.video_parse,
+                      meta={'video': VideoItem()},
                       dont_filter=True)
 
         # logging.info(f'[----------第{rank_temp}页的排行已经解析完毕----------]')
@@ -37,7 +38,7 @@ class AgetvRanksSpider(scrapy.Spider):
 
     def video_parse(self, resp: Response):
         logging.info('[----------开始解析数据----------]')
-        video = VideoItem()
+        video = resp.meta['video']
         video['v_title'] = resp.xpath('//div[@class="blockcontent"]/h4/text()').extract()
         video_tag = resp.xpath('//span[@class="detail_imform_value"]/text()').extract()
         video['v_address'] = video_tag[0]
