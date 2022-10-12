@@ -3,6 +3,11 @@ BOT_NAME = 'agetv'
 SPIDER_MODULES = ['agetv.spiders']
 NEWSPIDER_MODULE = 'agetv.spiders'
 
+# 管道
+ITEM_PIPELINES = {
+    'agetv.pipelines.AgetvPipeline': 200
+}
+
 ROBOTSTXT_OBEY = False
 
 DEFAULT_REQUEST_HEADERS = {
@@ -41,7 +46,7 @@ LOG_FORMAT = '%(asctime)s [%(name)s] %(levelname)s: %(message)s'
 LOG_DATEFORMAT = '%Y-%m-%d %H:%M:%S'
 
 # 日志级别 CRITICAL, ERROR, WARNING, INFO, DEBUG
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 # 如果等于True，所有的标准输出（包括错误）都会重定向到日志，例如：print('hello')
 LOG_STDOUT = False
@@ -62,8 +67,3 @@ CONCURRENT_REQUESTS_PER_IP = 100
 
 # 禁用cookie
 COOKIES_ENABLED = False
-
-# 管道优先级
-ITEM_PIPELINES = {
-    'agetv.pipelines.AgetvPipeline': 200
-}

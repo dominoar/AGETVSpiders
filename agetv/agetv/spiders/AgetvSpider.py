@@ -26,12 +26,11 @@ class AgetvRanksSpider(scrapy.Spider):
         rank_temp = self.rank_number
         logging.info(f'[----------开始解析第{rank_temp}页的排行页----------]')
         video_urls = response.xpath('//li[contains(@class,"rank_text")]/a/@href').extract()
-        print(video_urls)
+        video = VideoItem()
         # for video_url in video_urls:
         yield Request(method='GET', url=self.allowed_domains[0] + video_urls[0], callback=self.video_parse,
-                      meta={'video': VideoItem()},
+                      meta={'video': video},
                       dont_filter=True)
-
         # logging.info(f'[----------第{rank_temp}页的排行已经解析完毕----------]')
 
         # 解析每一个资源
@@ -39,7 +38,7 @@ class AgetvRanksSpider(scrapy.Spider):
     def video_parse(self, resp: Response):
         logging.info('[----------开始解析数据----------]')
         video = resp.meta['video']
-        video['v_title'] = resp.xpath('//div[@class="blockcontent"]/h4/text()').extract()
+        video['v_title'] = resp.xpath('//div[@class="blockcontent"]/h4/text()')[0].extract()
         video_tag = resp.xpath('//span[@class="detail_imform_value"]/text()').extract()
         video['v_address'] = video_tag[0]
         video['v_arime_type'] = video_tag[1]
@@ -59,7 +58,7 @@ class AgetvRanksSpider(scrapy.Spider):
         for movurl in movurls:
             urls = movurl.xpath('./ul//li/a/@href').extract()
             for i in range(0, len(urls)):
-                urls[i] = resp.url + urls[i]
+                urls[i] = self.allowed_domains[0] + urls[i]
             video_links.append(urls)
         video['v_urls'] = video_links
         yield video
