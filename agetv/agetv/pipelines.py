@@ -58,7 +58,6 @@ class AgetvPipeline:
                 v_title, v_address, v_arime_type, v_original_name, v_other_name, v_author, v_production, v_first_time,
                 v_play_status, v_polt_type, v_label, v_original_web, v_home)
             self.cursor.execute(sql)
-            logging.info('数据插入正常')
             return self.cursor.lastrowid
         except Exception as e:
             self.db.rollback()
