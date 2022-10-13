@@ -45,7 +45,7 @@ class AgetvPipeline:
         self.db.commit()
         self.sql_urls(urls=v_urls, arime_id=arime_id)
         self.db.commit()
-        self.cursor.execute("UPDATE arime SET v_urls = %s WHERE arime.v_id = %s" % (arime_id, arime_id))
+        self.cursor.execute(f"UPDATE arime SET v_urls = {arime_id} WHERE v_id = {arime_id}")
         self.db.commit()
         return item
 

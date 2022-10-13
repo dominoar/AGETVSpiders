@@ -46,7 +46,7 @@ LOG_FORMAT = '%(asctime)s [%(name)s] %(levelname)s: %(message)s'
 LOG_DATEFORMAT = '%Y-%m-%d %H:%M:%S'
 
 # 日志级别 CRITICAL, ERROR, WARNING, INFO, DEBUG
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'ERROR'
 
 # 如果等于True，所有的标准输出（包括错误）都会重定向到日志，例如：print('hello')
 LOG_STDOUT = False
