@@ -43,10 +43,9 @@ class AgetvPipeline:
                                     v_production,
                                     v_first_time, v_play_status, v_plot_type, v_label, v_original_web, v_home)
         self.db.commit()
-        arime_url_id = self.sql_urls(urls=v_urls, arime_id=arime_id)
+        self.sql_urls(urls=v_urls, arime_id=arime_id)
         self.db.commit()
-        print("UPDATE arime.arime SET v_urls = %s WHERE v_id = %s" % (arime_url_id, arime_id))
-        self.cursor.execute("UPDATE arime.arime SET v_urls = %s WHERE v_id = %s" % (arime_id, arime_id))
+        self.cursor.execute("UPDATE arime SET v_urls = %s WHERE arime.v_id = %s" % (arime_id, arime_id))
         self.db.commit()
         return item
 
@@ -66,20 +65,29 @@ class AgetvPipeline:
             logging.error(e.args)
 
     def sql_urls(self, urls: list, arime_id):
-        logging.info('开始插入urls')
         try:
-            urls_len = []
-            for k in range(0, len(urls)):
-                urls_len.append(len(urls[k]))
-                pass
-            for i in range(0, len(urls[urls_len.index(min(urls_len))])):
+            a = 0
+            last_index = -1
+            for url in urls:
+                b = len(url)
+                if last_index == -1:
+                    a = b
+                    last_index = last_index + 1
+                else:
+                    if b > a:
+                        for i in range(b - a):
+                            urls[last_index].append('')
+                        last_index = last_index + 1
+                        a = b
+                    elif b < a:
+                        for i in range(a - b):
+                            url.append('')
+                        last_index = last_index + 1
+            print(len(urls[0]), len(urls[1]), len(urls[2]), len(urls[3]))
+            for i in range(0, a):
                 self.cursor.execute(
-                    'INSERT INTO arime_urls(url1,arime_id) VALUES ("%s","%s")' % (
-                        urls[0][i], arime_id))
-                uid = self.cursor.lastrowid
-                self.cursor.execute(f'UPDATE arime_urls SET url2 = "{urls[1][i]}" WHERE uid={uid}')
-                self.cursor.execute(f'UPDATE arime_urls SET url3 = "{urls[2][i]}" WHERE uid={uid}')
-                self.cursor.execute(f'UPDATE arime_urls SET url4 = "{urls[3][i]}" WHERE uid={uid}')
+                    'INSERT INTO arime_urls(url1, url2, url3, url4,arime_id) VALUES ("%s","%s","%s","%s","%s")' % (
+                        urls[0][i], urls[1][i], urls[2][i], urls[3][i], arime_id))
         except IndexError as e:
             logging.error(e.args)
         except Exception as e:

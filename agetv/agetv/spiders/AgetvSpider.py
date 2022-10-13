@@ -16,22 +16,23 @@ class AgetvRanksSpider(scrapy.Spider):
     rank_number = 0
 
     def start_requests(self):
-        # for i in range(1, 51):
-        yield Request(url=f'https://www.agemys.cc/rank?tag=catyear&value=&page={1}')
-        logging.info(f'[----------开始请求第{1}页排行----------]')
+        for i in range(1, 51):
+            yield Request(url=f'https://www.agemys.cc/rank?tag=catyear&value=&page={i}')
+            logging.info(f'[----------开始请求第{1}页排行----------]')
 
     # 转接每一个资源请求到 video_parse进行解析
     def parse(self, response: Response, **kwargs):
         self.rank_number = self.rank_number + 1
+        print(self.rank_number)
         rank_temp = self.rank_number
         logging.info(f'[----------开始解析第{rank_temp}页的排行页----------]')
         video_urls = response.xpath('//li[contains(@class,"rank_text")]/a/@href').extract()
         video = VideoItem()
-        # for video_url in video_urls:
-        yield Request(method='GET', url=self.allowed_domains[0] + video_urls[0], callback=self.video_parse,
-                      meta={'video': video},
-                      dont_filter=True)
-        # logging.info(f'[----------第{rank_temp}页的排行已经解析完毕----------]')
+        for video_url in video_urls:
+            yield Request(method='GET', url=self.allowed_domains[0] + video_url, callback=self.video_parse,
+                          meta={'video': video},
+                          dont_filter=True)
+        logging.info(f'[----------第{rank_temp}页的排行已经解析完毕----------]')
 
         # 解析每一个资源
 
